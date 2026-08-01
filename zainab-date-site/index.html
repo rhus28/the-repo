@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Will you go on a date with me? 🌹</title>
+<style>
+  :root {
+    --pink: #ff8fb1;
+    --pink-dark: #d6567e;
+    --cream: #fff6e9;
+    --ink: #2b2033;
+    --sky: #bfe3ee;
+    --green: #3f9142;
+    --green-dark: #245e22;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    background: linear-gradient(180deg, #cfeefc 0%, #ffe3ef 55%, #ffd9e6 100%);
+    font-family: "Courier New", Courier, monospace;
+    color: var(--ink);
+  }
+
+  body {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Tickers ---------- */
+  .ticker {
+    width: 100%;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--cream);
+    white-space: nowrap;
+    border-top: 4px solid var(--pink-dark);
+    border-bottom: 4px solid var(--pink-dark);
+    position: relative;
+    z-index: 20;
+    flex-shrink: 0;
+  }
+
+  .ticker-track {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 18s linear infinite;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 14px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .ticker-bottom .ticker-track {
+    animation-direction: reverse;
+  }
+
+  @keyframes scroll-left {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+
+  /* ---------- Decorative pixel sprites ---------- */
+  #decor {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #decor canvas {
+    position: absolute;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+    animation: bob 4s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+    50% { transform: translateY(-8px) rotate(var(--rot, 0deg)); }
+  }
+
+  /* ---------- Main stage ---------- */
+  main#stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 5;
+    padding: 32px 16px;
+  }
+
+  .card {
+    background: var(--cream);
+    border: 6px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--pink-dark), 8px 8px 0 4px var(--ink);
+    padding: 36px 28px;
+    max-width: 480px;
+    text-align: center;
+    image-rendering: pixelated;
+  }
+
+  .card h1 {
+    font-size: 22px;
+    line-height: 1.5;
+    margin: 0 0 28px;
+    text-shadow: 2px 2px 0 var(--pink);
+  }
+
+  .buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .pixel-btn {
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    cursor: pointer;
+    color: var(--cream);
+    background: var(--green);
+    border: 4px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform 0.05s ease;
+  }
+
+  .pixel-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .pixel-btn.no {
+    background: var(--pink-dark);
+  }
+
+  .pixel-btn.yes {
+    background: #4caf50;
+  }
+
+  /* ---------- Yes scene ---------- */
+  #yes-scene {
+    text-align: center;
+    max-width: 720px;
+    width: 100%;
+  }
+
+  #hillCanvas {
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border: 6px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--pink-dark), 8px 8px 0 4px var(--ink);
+  }
+
+  .hill-caption {
+    margin-top: 22px;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--ink);
+    background: var(--cream);
+    display: inline-block;
+    padding: 12px 20px;
+    border: 4px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--ink);
+    text-shadow: 2px 2px 0 var(--pink);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* ---------- Fake error modal ---------- */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 10, 20, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+
+  .modal-box {
+    background: #d6d6d6;
+    border: 4px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    width: 320px;
+    max-width: 100%;
+    image-rendering: pixelated;
+  }
+
+  .modal-titlebar {
+    background: linear-gradient(180deg, #4a4a8f, #2b2b5c);
+    color: #fff;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+
+  .modal-body {
+    padding: 18px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .modal-body canvas {
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+
+  #errorText {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 16px 16px;
+  }
+
+  #errorOk {
+    font-size: 13px;
+    padding: 8px 22px;
+  }
+
+  @media (max-width: 480px) {
+    .card h1 { font-size: 18px; }
+    .pixel-btn { font-size: 14px; padding: 12px 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="ticker ticker-top">
+    <div class="ticker-track">🎀 HAPPY NATIONAL GIRLFRIEND DAY 🎀 &nbsp; ★ &nbsp; HAPPY NATIONAL GIRLFRIEND DAY 🎀 &nbsp; ★ &nbsp; HAPPY NATIONAL GIRLFRIEND DAY 🎀 &nbsp; ★ &nbsp;</div>
+  </div>
+
+  <div id="decor"></div>
+
+  <main id="stage">
+    <section id="question-card" class="card">
+      <h1>Zainab,<br>would you like to go on a date with me?</h1>
+      <div class="buttons">
+        <button id="yesBtn" class="pixel-btn yes">Yes</button>
+        <button id="noBtn" class="pixel-btn no">No</button>
+      </div>
+    </section>
+
+    <section id="yes-scene" class="hidden">
+      <canvas id="hillCanvas" width="80" height="48"></canvas>
+      <p class="hill-caption">I can't wait to take a walk with you 🌿</p>
+    </section>
+  </main>
+
+  <div id="errorModal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-titlebar"><span>⚠</span><span>SYSTEM ERROR</span></div>
+      <div class="modal-body">
+        <canvas id="errorIcon" width="16" height="16" style="width:48px;height:48px;"></canvas>
+        <p id="errorText"></p>
+      </div>
+      <div class="modal-actions">
+        <button id="errorOk" class="pixel-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker ticker-bottom">
+    <div class="ticker-track">🌹 NATIONAL GIRLFRIEND DAY 🌹 &nbsp; ★ &nbsp; NATIONAL GIRLFRIEND DAY 🌹 &nbsp; ★ &nbsp; NATIONAL GIRLFRIEND DAY 🌹 &nbsp; ★ &nbsp;</div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= Pixel grid helpers ================= */
+
+  function makeGrid(w, h) {
+    const rows = [];
+    for (let y = 0; y < h; y++) rows.push(new Array(w).fill(null));
+    return rows;
+  }
+
+  function setPx(grid, x, y, c) {
+    x = Math.round(x); y = Math.round(y);
+    if (y < 0 || y >= grid.length || x < 0 || x >= grid[0].length) return;
+    grid[y][x] = c;
+  }
+
+  function fillRect(grid, x0, y0, w, h, c) {
+    for (let y = y0; y < y0 + h; y++) {
+      for (let x = x0; x < x0 + w; x++) setPx(grid, x, y, c);
+    }
+  }
+
+  function fillCircle(grid, cx, cy, r, c) {
+    const rr = r * r + r * 0.4;
+    for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) {
+      for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) {
+        const dx = x - cx, dy = y - cy;
+        if (dx * dx + dy * dy <= rr) setPx(grid, x, y, c);
+      }
+    }
+  }
+
+  function fillEllipse(grid, cx, cy, rx, ry, c) {
+    for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+      for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+        const dx = (x - cx) / rx, dy = (y - cy) / ry;
+        if (dx * dx + dy * dy <= 1.05) setPx(grid, x, y, c);
+      }
+    }
+  }
+
+  function drawThickLine(grid, x0, y0, x1, y1, thick, c) {
+    const dx = x1 - x0, dy = y1 - y0;
+    const steps = Math.max(Math.abs(dx), Math.abs(dy), 1);
+    for (let i = 0; i <= steps; i++) {
+      const x = x0 + (dx * i) / steps;
+      const y = y0 + (dy * i) / steps;
+      if (thick <= 0) setPx(grid, x, y, c);
+      else fillCircle(grid, x, y, thick, c);
+    }
+  }
+
+  function drawGlyph(grid, rows, x0, y0, c) {
+    for (let y = 0; y < rows.length; y++) {
+      for (let x = 0; x < rows[y].length; x++) {
+        if (rows[y][x] === "X") setPx(grid, x0 + x, y0 + y, c);
+      }
+    }
+  }
+
+  function paintGrid(canvas, grid) {
+    canvas.width = grid[0].length;
+    canvas.height = grid.length;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[y].length; x++) {
+        const c = grid[y][x];
+        if (c) { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); }
+      }
+    }
+  }
+
+  /* ================= Sprite definitions ================= */
+
+  function spriteOrange() {
+    const g = makeGrid(18, 18);
+    fillCircle(g, 9, 10, 7, "#D9622A");
+    fillCircle(g, 9, 9, 7, "#FF8A3D");
+    fillCircle(g, 7, 7, 2, "#FFC172");
+    fillRect(g, 8, 0, 2, 2, "#6B4226");
+    setPx(g, 10, 0, "#3F9142"); setPx(g, 11, 0, "#3F9142");
+    setPx(g, 11, 1, "#2B6B2E"); setPx(g, 12, 1, "#3F9142");
+    return g;
+  }
+
+  function spritePalmTree() {
+    const g = makeGrid(20, 28);
+    for (let y = 14; y < 26; y++) {
+      const x = 9 + Math.round(Math.sin((y - 14) / 3) * 1.4);
+      fillRect(g, x, y, 2, 1, "#8B5A2B");
+      setPx(g, x, y, "#6E4420");
+    }
+    const tip = { x: 10, y: 14 };
+    const leafDirs = [
+      [-9, -5, "#2E8B57"], [-6, -9, "#3FAE6C"], [-2, -11, "#2E8B57"],
+      [2, -11, "#3FAE6C"], [6, -9, "#2E8B57"], [9, -5, "#3FAE6C"],
+      [-5, -2, "#1F5C3A"], [5, -2, "#1F5C3A"]
+    ];
+    leafDirs.forEach(([dx, dy, c]) => {
+      drawThickLine(g, tip.x, tip.y, tip.x + dx, tip.y + dy, 0.7, c);
+    });
+    fillCircle(g, tip.x - 2, tip.y + 1, 1, "#6B4226");
+    fillCircle(g, tip.x, tip.y + 2, 1, "#6B4226");
+    fillCircle(g, tip.x + 2, tip.y + 1, 1, "#6B4226");
+    return g;
+  }
+
+  function spriteMatcha() {
+    const g = makeGrid(18, 24);
+    fillRect(g, 8, 0, 1, 10, "#2E7D32");
+    fillRect(g, 10, 1, 1, 9, "#245E22");
+    for (let y = 9; y < 22; y++) {
+      const t = (y - 9) / (22 - 9);
+      const width = Math.round(13 - t * 5);
+      const x0 = Math.round(9 - width / 2);
+      fillRect(g, x0, y, width, 1, "#FFF3D6");
+      setPx(g, x0 + width - 1, y, "#F2D9A0");
+      setPx(g, x0, y, "#F2D9A0");
+    }
+    for (let y = 9; y < 12; y++) {
+      const t = (y - 9) / 3;
+      const width = Math.round(12 - t * 1);
+      const x0 = Math.round(9 - width / 2);
+      fillRect(g, x0 + 1, y, width - 2, 1, y === 9 ? "#A9C24A" : "#6B8E23");
+    }
+    fillRect(g, 5, 22, 8, 2, "#E0C48C");
+    return g;
+  }
+
+  function spriteShoe() {
+    const g = makeGrid(28, 16);
+    fillRect(g, 2, 12, 24, 3, "#1B1B1B");
+    fillRect(g, 1, 13, 1, 2, "#1B1B1B");
+    fillRect(g, 25, 12, 2, 2, "#1B1B1B");
+    fillRect(g, 6, 13, 2, 1, "#F2C230");
+    fillRect(g, 14, 13, 2, 1, "#F2C230");
+    fillRect(g, 21, 13, 2, 1, "#F2C230");
+    fillEllipse(g, 19, 7, 8, 5, "#6E7B8B");
+    fillRect(g, 24, 4, 3, 6, "#5C6B7A");
+    const toes = [
+      { x: 2, top: 9, h: 4 },
+      { x: 5, top: 7, h: 6 },
+      { x: 8, top: 6, h: 7 },
+      { x: 11, top: 6, h: 7 },
+      { x: 14, top: 8, h: 5 }
+    ];
+    toes.forEach((t) => {
+      fillRect(g, t.x, t.top, 2, t.h, "#8492A6");
+      setPx(g, t.x, t.top, "#9AACC0");
+      setPx(g, t.x + 1, t.top + t.h - 1, "#4A5568");
+    });
+    return g;
+  }
+
+  function spriteFootlocker() {
+    const g = makeGrid(22, 16);
+    fillRect(g, 2, 3, 18, 11, "#0A5C36");
+    fillRect(g, 2, 3, 18, 2, "#073D24");
+    drawThickLine(g, 3, 13, 19, 5, 1, "#FFFFFF");
+    drawGlyph(g, ["XXX", "X..", "XX.", "X..", "X.."], 5, 6, "#FFFFFF");
+    drawGlyph(g, ["X..", "X..", "X..", "X..", "XXX"], 11, 6, "#FFFFFF");
+    fillRect(g, 2, 3, 18, 1, "#F2C230");
+    return g;
+  }
+
+  function spriteRose() {
+    const g = makeGrid(16, 24);
+    fillRect(g, 7, 10, 1, 13, "#2E7D32");
+    fillRect(g, 8, 12, 1, 10, "#245E22");
+    drawThickLine(g, 7, 16, 3, 18, 0.8, "#3F9142");
+    drawThickLine(g, 8, 19, 12, 21, 0.8, "#3F9142");
+    fillCircle(g, 8, 7, 5, "#8F0F2B");
+    fillCircle(g, 8, 6, 4, "#C81D3F");
+    fillCircle(g, 7, 5, 2, "#E8496B");
+    return g;
+  }
+
+  const SPRITES = [
+    { name: "orange", gen: spriteOrange, scale: 7 },
+    { name: "palm", gen: spritePalmTree, scale: 6 },
+    { name: "matcha", gen: spriteMatcha, scale: 6 },
+    { name: "shoe", gen: spriteShoe, scale: 6 },
+    { name: "footlocker", gen: spriteFootlocker, scale: 6 },
+    { name: "rose", gen: spriteRose, scale: 7 }
+  ];
+
+  /* ================= Random placement of decorations ================= */
+
+  function rectsOverlap(a, b, pad) {
+    return !(
+      a.left + a.w + pad < b.left ||
+      b.left + b.w + pad < a.left ||
+      a.top + a.h + pad < b.top ||
+      b.top + b.h + pad < a.top
+    );
+  }
+
+  function placeDecor() {
+    const decor = document.getElementById("decor");
+    decor.innerHTML = "";
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const cx = vw / 2, cy = vh / 2;
+    const excludeR = Math.min(vw, vh) * 0.32;
+    const placed = [];
+
+    SPRITES.forEach((sprite) => {
+      const canvas = document.createElement("canvas");
+      paintGrid(canvas, sprite.gen());
+      const w = canvas.width * sprite.scale;
+      const h = canvas.height * sprite.scale;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+
+      let left, top, rect, tries = 0;
+      do {
+        left = Math.random() * Math.max(1, vw - w);
+        top = Math.random() * Math.max(1, vh - h);
+        rect = { left, top, w, h };
+        tries++;
+      } while (
+        tries < 30 &&
+        (Math.hypot(left + w / 2 - cx, top + h / 2 - cy) < excludeR ||
+          placed.some((p) => rectsOverlap(rect, p, 24)))
+      );
+
+      placed.push(rect);
+      canvas.style.left = left + "px";
+      canvas.style.top = top + "px";
+      canvas.style.setProperty("--rot", (Math.random() * 16 - 8) + "deg");
+      canvas.style.animationDelay = (Math.random() * 3) + "s";
+      canvas.style.animationDuration = (3.5 + Math.random() * 2) + "s";
+      decor.appendChild(canvas);
+    });
+  }
+
+  window.addEventListener("resize", () => {
+    clearTimeout(window.__decorResizeTimer);
+    window.__decorResizeTimer = setTimeout(placeDecor, 200);
+  });
+
+  /* ================= Hill scene (Yes) ================= */
+
+  function drawHill(grid, baseRow, cx, spread, amplitude, colorTop, colorMain) {
+    const w = grid[0].length, h = grid.length;
+    for (let x = 0; x < w; x++) {
+      const dx = (x - cx) / spread;
+      let hgt = amplitude * (1 - dx * dx);
+      if (hgt < 0) hgt = 0;
+      const top = Math.round(baseRow - hgt);
+      for (let y = Math.max(0, top); y < h; y++) {
+        grid[y][x] = (y - top < 2) ? colorTop : colorMain;
+      }
+    }
+  }
+
+  function drawCloud(grid, x, y) {
+    fillRect(grid, x, y, 6, 2, "#FFFFFF");
+    fillRect(grid, x + 1, y - 1, 4, 1, "#FFFFFF");
+    fillRect(grid, x - 1, y + 2, 8, 1, "#EAF4FA");
+  }
+
+  function drawPath(grid, horizon) {
+    const w = grid[0].length, h = grid.length;
+    const startX = Math.floor(w * 0.53);
+    for (let y = h - 1; y >= horizon - 2; y--) {
+      const t = (h - 1 - y) / (h - horizon + 2);
+      const x = Math.round(startX + Math.sin(t * 3.2) * w * 0.06 - t * w * 0.03);
+      setPx(grid, x - 1, y, "#E7D6A3");
+      setPx(grid, x, y, "#F0E3BC");
+      setPx(grid, x + 1, y, "#E7D6A3");
+    }
+  }
+
+  function scatterFlowers(grid, horizon) {
+    const w = grid[0].length, h = grid.length;
+    const colors = ["#FFD1E3", "#FFFFFF", "#FFE07A"];
+    for (let i = 0; i < 26; i++) {
+      const x = Math.floor(Math.random() * w);
+      const y = horizon + 4 + Math.floor(Math.random() * (h - horizon - 6));
+      const cell = grid[y] && grid[y][x];
+      if (cell === "#3F8A2A" || cell === "#6FAE45") {
+        setPx(grid, x, y, colors[i % colors.length]);
+      }
+    }
+  }
+
+  function buildHillScene(canvas) {
+    const cols = 80, rows = 48;
+    const grid = makeGrid(cols, rows);
+    const horizon = Math.floor(rows * 0.56);
+
+    const skyColors = ["#7ec8e3", "#9ad4e8", "#bfe3ee", "#e9f3d8", "#fff0c9"];
+    for (let y = 0; y < horizon; y++) {
+      const band = Math.min(skyColors.length - 1, Math.floor((y / horizon) * skyColors.length));
+      for (let x = 0; x < cols; x++) grid[y][x] = skyColors[band];
+    }
+
+    fillCircle(grid, cols - 14, 8, 5, "#FFE07A");
+    fillCircle(grid, cols - 14, 8, 3, "#FFD24C");
+    drawCloud(grid, 8, 6);
+    drawCloud(grid, 28, 11);
+
+    drawHill(grid, horizon + 3, cols * 0.5, cols * 0.75, rows * 0.42, "#8FCB5C", "#6FAE45");
+    drawHill(grid, horizon + 6, cols * 0.42, cols * 0.9, rows * 0.5, "#5FAE3D", "#3F8A2A");
+
+    drawPath(grid, horizon);
+    scatterFlowers(grid, horizon);
+
+    paintGrid(canvas, grid);
+  }
+
+  /* ================= Fake error icon ================= */
+
+  function buildErrorIcon(canvas) {
+    const g = makeGrid(16, 16);
+    fillCircle(g, 8, 8, 7, "#C81D1D");
+    fillCircle(g, 8, 8, 6, "#F04444");
+    fillRect(g, 7, 3, 2, 6, "#FFFFFF");
+    fillRect(g, 7, 10, 2, 2, "#FFFFFF");
+    paintGrid(canvas, g);
+  }
+
+  /* ================= Interactions ================= */
+
+  const ERROR_MESSAGES = [
+    "Error 0x00404: 'No' response not found in this relationship.",
+    "System.LoveException: Rejection.exe has stopped responding.",
+    "Fatal Error: This action requires heart administrator approval.",
+    "Warning: 'No' button integrity compromised. Please try 'Yes' instead.",
+    "404: Valid reason to say no could not be located.",
+    "Critical Error: The universe rejected this input.",
+    "Blue Screen of Love: Please restart and select 'Yes'.",
+    "Error: Girlfriend.exe cannot process negative responses on National Girlfriend Day.",
+    "Access Denied: Insufficient charm to decline this offer.",
+    "Timeout Error: Your heart took too long to say no, please try yes."
+  ];
+
+  let lastMsgIndex = -1;
+  function pickMessage() {
+    let idx;
+    do { idx = Math.floor(Math.random() * ERROR_MESSAGES.length); }
+    while (idx === lastMsgIndex && ERROR_MESSAGES.length > 1);
+    lastMsgIndex = idx;
+    return ERROR_MESSAGES[idx];
+  }
+
+  function init() {
+    placeDecor();
+
+    const errorIconCanvas = document.getElementById("errorIcon");
+    buildErrorIcon(errorIconCanvas);
+
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const modal = document.getElementById("errorModal");
+    const errorText = document.getElementById("errorText");
+    const errorOk = document.getElementById("errorOk");
+
+    noBtn.addEventListener("click", () => {
+      errorText.textContent = pickMessage();
+      modal.classList.remove("hidden");
+    });
+
+    errorOk.addEventListener("click", () => {
+      modal.classList.add("hidden");
+    });
+
+    yesBtn.addEventListener("click", () => {
+      document.getElementById("question-card").classList.add("hidden");
+      const scene = document.getElementById("yes-scene");
+      scene.classList.remove("hidden");
+      buildHillScene(document.getElementById("hillCanvas"));
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
